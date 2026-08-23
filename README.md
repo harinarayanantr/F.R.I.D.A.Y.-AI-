@@ -1,4 +1,5 @@
 F.R.I.D.A.Y.
+<img width="1366" height="652" alt="image" src="https://github.com/user-attachments/assets/800084ee-e44a-4c05-b12e-dc06c0561310" />
 
 An asynchronous, local AI assistant integrating real-time voice processing, computer vision, local automation, and Groq-powered LLM tool execution.
 
