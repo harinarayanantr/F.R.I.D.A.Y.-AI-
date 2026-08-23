@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=F.R.I.D.A.Y. Assistant
+Comment=Voice-controlled AI assistant with HUD dashboard
+# Headless-safe: stdin is detached (/dev/null) so FRIDAY never blocks on a
+# terminal prompt at boot, and stdout/stderr go to a log file instead of a
+# non-existent terminal. Terminal=false keeps it off the desktop session.
+Exec=/bin/bash -c 'cd /home/hari-tr/Downloads/friday-ai && exec ./start.sh </dev/null >>/tmp/friday-ai.log 2>&1'
+Path=/home/hari-tr/Downloads/friday-ai
+Terminal=false
+X-GNOME-Autostart-enabled=true
+Categories=Utility;
+StartupNotify=false

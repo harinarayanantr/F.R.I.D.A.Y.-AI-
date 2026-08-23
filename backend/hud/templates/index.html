@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>F.R.I.D.A.Y.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="/static/hud.css" />
+</head>
+<body>
+
+<div class="scanlines"></div>
+<div class="grid-bg"></div>
+
+<header class="topbar">
+  <div class="brand">F.R.I.D.A.Y.</div>
+  <div class="status-pill" id="statusPill">
+    <span class="dot"></span><span id="statusText">IDLE</span>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- LEFT: system log -->
+  <section class="panel panel-log">
+    <div class="panel-title">// SYSTEM LOG</div>
+    <div id="log" class="log-scroll"></div>
+  </section>
+
+  <!-- CENTER: arc reactor core -->
+  <section class="core-wrap">
+    <div class="core" id="core">
+      <svg viewBox="0 0 600 600" class="ring ring-outer">
+        <circle cx="300" cy="300" r="270" class="ring-track" />
+        <circle cx="300" cy="300" r="270" class="ring-progress" id="ringOuter" />
+      </svg>
+      <svg viewBox="0 0 600 600" class="ring ring-mid">
+        <circle cx="300" cy="300" r="215" class="ring-track alt" />
+        <circle cx="300" cy="300" r="215" class="ring-progress alt" id="ringMid" />
+      </svg>
+      <svg viewBox="0 0 600 600" class="ring ring-inner">
+        <circle cx="300" cy="300" r="160" class="ring-track" />
+        <circle cx="300" cy="300" r="160" class="ring-progress" id="ringInner" />
+      </svg>
+      <div class="core-label">F.R.I.D.A.Y.</div>
+      <canvas id="wave" class="waveform" width="500" height="80"></canvas>
+    </div>
+
+    <form id="cmdForm" class="cmd-form">
+      <input id="cmdInput" autocomplete="off" placeholder="Type a command, or just say &quot;Hey FRIDAY&quot;..." />
+      <button type="submit">SEND</button>
+    </form>
+  </section>
+
+  <!-- RIGHT: vision + esp32 dashboard -->
+  <section class="panel panel-right">
+    <div class="panel-title">// OPTICAL FEED</div>
+    <img id="camFeed" class="cam-feed" alt="camera offline" />
+
+    <div class="panel-title" style="margin-top:16px">// HARDWARE // ESP32</div>
+    <div id="esp32Cards" class="esp32-cards">
+      <div class="dim">No ESP32 data yet.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span>WAKE WORD: "HEY FRIDAY"</span>
+  <span>GESTURES: 1=CLAUDE · 2=DASHBOARD · 3=YOUTUBE · 4=GOOGLE · 5=INSTAGRAM</span>
+  <span id="clock"></span>
+</footer>
+
+<script src="/static/hud.js"></script>
+
+<!-- Command approval overlay (hidden until FRIDAY asks for authorization) -->
+<div id="approvalOverlay" class="approval-overlay" hidden>
+  <div class="approval-card">
+    <div class="panel-title">// AUTHORIZATION REQUIRED</div>
+    <div class="approval-desc" id="approvalDesc">FRIDAY wants to run a command.</div>
+    <pre class="approval-cmd" id="approvalCmd"></pre>
+    <div class="approval-timer" id="approvalTimer"></div>
+    <div class="approval-actions">
+      <button type="button" id="approvalDenyBtn" class="approval-btn deny">DENY (N)</button>
+      <button type="button" id="approvalApproveBtn" class="approval-btn approve">APPROVE (Y)</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
