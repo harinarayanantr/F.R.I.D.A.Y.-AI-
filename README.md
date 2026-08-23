@@ -1,134 +1,99 @@
-# F.R.I.D.A.Y. 🤖
+F.R.I.D.A.Y.
 
-> A personal AI assistant inspired by Tony Stark's FRIDAY — voice, vision, hardware, and a Groq-powered brain.
+An asynchronous, local AI assistant integrating real-time voice processing, computer vision, local automation, and Groq-powered LLM tool execution.
 
-F.R.I.D.A.Y. is a fully-featured AI assistant that runs on your machine:
+F.R.I.D.A.Y. operates as a distributed system designed for minimal latency and fully local execution of multi-modal streams:
 
-- 🧠 **Groq LLM brain** with tool-calling — controls your computer via natural language
-- 🎙️ **Voice pipeline** — offline wake word ("Hey FRIDAY"), Whisper STT, natural TTS
-- 👋 **Computer vision** — MediaPipe hand-gesture control and webcam face tracking
-- 🔌 **ESP32 bridge** — talk to sensors/relays over WiFi, with OTA firmware updates
-- 🖥️ **Arc-reactor HUD** — a web-based dashboard you can talk or type into
+    Groq LLM Engine: Executes structured tool-calling pipelines to interact directly with the host operating system via high-throughput function schemas.
 
-## Project Structure
+    Audio Pipeline: Combines local wake-word activation (Vosk engine), speech recognition (Groq Whisper API), and real-time audio synthesis (Edge-TTS).
 
-```
+    Computer Vision Module: Implements MediaPipe pipelines for concurrent real-time hand-gesture classification and facial tracking via OpenCV.
+
+    Hardware Telemetry (ESP32): Asynchronous HTTP client interface communicating with microcontrollers over local network protocols with OTA support.
+
+    Web HUD Dashboard: FastAPI-driven web dashboard utilizing WebSockets for real-time telemetry rendering and dynamic system interaction.
+
+Architecture Directory
+
 friday-ai/
-├── setup.sh                  # Run once — installs everything
-├── start.sh                  # Run every time — brings FRIDAY up
-├── .env.example              # Copy to .env and add your Groq key
-├── requirements.txt
+├── setup.sh                 # Environment setup and dependency bootstrapper
+├── start.sh                 # System orchestrator startup script
+├── .env.example             # Configuration settings template
+├── requirements.txt         # Dependencies list
 ├── backend/
-│   ├── main.py               # FastAPI server + orchestrator
-│   ├── brain.py              # Groq LLM + tool-calling ("the brain")
-│   ├── system_control.py     # Open apps, run shell cmds, files, browser
-│   ├── voice/                # Wake word (Vosk) · STT (Groq Whisper) · TTS (edge-tts)
-│   ├── vision/               # MediaPipe hand gestures + face tracking
-│   ├── esp32/                # HTTP client for your ESP32 boards
-│   └── hud/                  # Web-based Tony Stark style HUD (HTML/CSS/JS)
+│   ├── main.py              # FastAPI server & asynchronous event loop
+│   ├── brain.py             # Tool execution engine and Groq client interface
+│   ├── system_control.py    # OS-level execution handlers (shell, FS, URL)
+│   ├── voice/               # Vosk wake-word, Whisper STT, and Edge-TTS modules
+│   ├── vision/              # MediaPipe gesture detection and face processing
+│   ├── esp32/               # Microcontroller REST interface client
+│   └── hud/                 # Static HUD web assets (HTML/CSS/JS)
 └── esp32_firmware/
-    └── friday_esp32.ino      # Flash this to your ESP32
-```
+    └── friday_esp32.ino     # C++ microcontroller firmware
 
-## Quick Start
+Setup & Deployment
+1. Installation
 
-### 1. Install
+Execute the bootstrapper script to install system dependencies (portaudio, ffmpeg, cmake), configure the Python virtual environment, download the Vosk acoustic model, and initialize configuration files:
+Bash
 
-```bash
 chmod +x setup.sh start.sh
 ./setup.sh
-```
 
-Installs system packages (portaudio, ffmpeg, cmake), creates a Python virtual
-environment, installs all dependencies, and downloads the offline wake-word model.
-It also creates `.env` from `.env.example`.
+2. Configuration & Safety Settings
 
-> **Windows:** run inside WSL2 (Ubuntu). For native Windows, install Python 3.11+,
-> ffmpeg, and Build Tools for Visual Studio manually, then `pip install -r requirements.txt`.
+Obtain an API key from console.groq.com and configure your .env file:
+Code snippet
 
-### 2. Add your Groq API key
+GROQ_API_KEY=gsk_your_actual_key_here
+AUTO_CONFIRM_SHELL=true
 
-1. Get a free key at [console.groq.com/keys](https://console.groq.com/keys)
-2. Set it in `.env`:
+Important Deployment Note regarding Command Approvals:
+The WebSocket-based interactive permission modal within the HUD is currently undergoing optimization and may cause execution delays during headless autostart. For consistent operation, set AUTO_CONFIRM_SHELL=true in your .env file to bypass manual terminal prompts.
 
-```env
-GROQ_API_KEY=gsk_your_real_key_here
-```
+3. System Launch
 
-That's the only required key — voice, vision, and wake word all run locally.
+Start the system stack:
+Bash
 
-### 3. Run
-
-```bash
 ./start.sh
-```
 
-Opens the HUD at **http://localhost:8000**, starts listening for **"Hey FRIDAY"**,
-and launches the webcam gesture/face tracker. Talk to her, or type into the HUD's
-command box — both go through the same brain.
+Access the HUD interface at http://localhost:8000. The system concurrently initializes audio capture streams and webcam gesture processing loops.
+Input Systems
+Gesture Mappings
 
-## Gestures
+Configure mappings via .env settings:
+Gesture	Default Command
+1 Finger	open_url:[https://claude.ai](https://claude.ai)
+2 Fingers	Opens Admin Dashboard
+3 Fingers	open_url:[https://youtube.com](https://youtube.com)
 
-Default mapping (edit `GESTURE_*_ACTION` in `.env`):
+Action structure syntax: open_url:<url>, open_app:<name>, run_command:<cmd>.
+Face Recognition Pipeline
 
-| Gesture | Action |
-|---|---|
-| ☝️ 1 finger | Opens claude.ai |
-| ✌️ 2 fingers | Opens the FRIDAY admin dashboard |
-| 🤟 3 fingers | Opens YouTube |
+    Uncomment face_recognition==1.3.0 in requirements.txt and execute ./setup.sh.
 
-Supported action formats: `open_url:<url>`, `open_app:<name>`, `run_command:<shell command>`.
+    Save reference images (person_name.jpg) into friday_workspace/known_faces/.
 
-## Face Recognition (optional)
+    Set ENABLE_FACE_RECOGNITION=true in .env.
 
-By default FRIDAY *detects and tracks* faces. To recognize *named* people:
+ESP32 Hardware Integration
 
-1. Uncomment `face_recognition==1.3.0` in `requirements.txt` and re-run `./setup.sh`
-   (needs `cmake`/`dlib`, so it's off by default).
-2. Drop a clear reference photo of each person into `friday_workspace/known_faces/`,
-   named `their_name.jpg`.
-3. Set `ENABLE_FACE_RECOGNITION=true` in `.env` and restart.
+    Flash esp32_firmware/friday_esp32/friday_esp32.ino via Arduino IDE (requires ArduinoJson).
 
-## ESP32 Integration
+    Retrieve the board IP from the Serial Monitor (115200 baud).
 
-1. Open `esp32_firmware/friday_esp32/friday_esp32.ino` in the Arduino IDE.
-2. Install the **ArduinoJson** library (Library Manager).
-3. Set `WIFI_SSID` / `WIFI_PASSWORD` (and change `OTA_PASSWORD`) in the sketch.
-4. Flash it — the Serial Monitor (115200 baud) shows the board's IP.
-5. In `.env`: set `ESP32_ENABLED=true` and `ESP32_IP=<that IP>`, then restart.
+    Update .env with ESP32_ENABLED=true and ESP32_IP=<BOARD_IP>.
 
-Now just say:
+Pins can be configured dynamically through natural language tool calls without reflashing. OTA updates are supported on the local network subnet.
+Troubleshooting
+Issue	Resolution
+Audio Input Error	Verify portaudio19-dev installation and system ALSA/PulseAudio input access
+Wake Word Inactive	Verify path backend/voice/model/vosk-model-small-en-us
+Camera Frame Failure	Check index assignment via CAMERA_INDEX in .env
+Hardware Timeout	Ensure host and ESP32 board share identical network subnets
+License
 
-> "Hey FRIDAY, I just connected a gas sensor to pin 34, show it on the dashboard."
-
-FRIDAY configures the pin over HTTP — no reflashing needed. The reading appears as a
-live card on the HUD.
-
-**OTA updates:** after the first flash, push new firmware wirelessly via the Arduino
-IDE (Tools → Port → `friday-esp32`) or PlatformIO — no USB cable needed.
-
-## Shell Command Safety
-
-FRIDAY asks for a `y/N` confirmation in the terminal before running any shell command.
-Set `AUTO_CONFIRM_SHELL=true` in `.env` to skip confirmation (**not recommended** on
-machines with sensitive data).
-
-File writes/deletes through conversation are scoped to `friday_workspace/` unless an
-explicit absolute path is given.
-
-## Troubleshooting
-
-| Problem | Fix |
-|---|---|
-| No sound / mic errors | Ensure `portaudio19-dev` installed; check OS mic permissions for terminal/Python |
-| Wake word never triggers | Verify `backend/voice/model/vosk-model-small-en-us` exists; speak closer; say "hey friday" naturally |
-| Camera feed blank in HUD | Try different `CAMERA_INDEX` values in `.env`; close apps holding the webcam |
-| ESP32 cards never appear | Check `ESP32_ENABLED=true`, correct IP, and both devices on the same subnet |
-
-## License
-
-MIT — see [LICENSE](LICENSE).
-
----
-
-*Yes, she'll call you "boss" occasionally.* 😎
+Distributed under the MIT License. See LICENSE for details.
+*Coded using AI. May contain errors. Use with caution.
