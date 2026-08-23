@@ -96,4 +96,6 @@ Hardware Timeout	Ensure host and ESP32 board share identical network subnets
 License
 
 Distributed under the MIT License. See LICENSE for details.
+
+
 *Coded using AI. May contain errors. Use with caution.
